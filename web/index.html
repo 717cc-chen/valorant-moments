@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>无畏时刻 · 本地视频墙</title>
+<link rel="stylesheet" href="/static/style.css?v=31">
+</head>
+<body class="mode-detail">
+
+<!-- ============ 侧栏 ============ -->
+<aside class="side">
+  <div class="logo">
+    <span class="m"><svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="0.5" y="0.5" width="13" height="13" rx="0.5" fill="#101A24" stroke="#FF4654"/><path d="M3.5 6.63885V4.40753C3.5 4.25157 3.69634 4.18264 3.79384 4.30436L7.95746 9.50263C8.04399 9.61067 7.96707 9.77083 7.82865 9.77083H6.14433C5.94417 9.77083 5.75483 9.68002 5.62954 9.52394L3.64534 7.05208C3.55127 6.9349 3.5 6.78912 3.5 6.63885Z" fill="#FF4654"/><path d="M9.3856 7.83201H7.72498C7.58657 7.83201 7.50965 7.67187 7.59616 7.56382L10.2061 4.30446C10.3036 4.18272 10.5 4.25166 10.5 4.40762V6.61806C10.5 6.77073 10.4471 6.91868 10.3503 7.03671L9.89599 7.59053C9.7706 7.74339 9.58331 7.83201 9.3856 7.83201Z" fill="#FF4654"/></svg></span>
+    <b>无畏时刻</b><span class="tag">本地</span>
+  </div>
+
+  <div class="sgroup">
+    <div class="slabel">浏览</div>
+    <a class="sitem on" href="#" data-nav="all">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3V9Z"/></svg>
+      全部录像<span class="cnt" id="cntAll">—</span>
+    </a>
+    <a class="sitem" href="#" data-nav="fav">
+      <svg viewBox="0 0 24 24"><path d="M12 3.5 14.7 9l6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.9l6-.9L12 3.5Z"/></svg>
+      收藏<span class="cnt" id="cntFav">0</span>
+    </a>
+    <a class="sitem" href="#" id="navTags">
+      <svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 0 1 2-2h4l6.5 6.5a2 2 0 0 1 0 2.8l-3 3a2 2 0 0 1-2.8 0L4 12V8Z"/><circle cx="8" cy="10" r="1.1" fill="currentColor" stroke="none"/></svg>
+      标签<span class="cnt" id="cntTags">0</span>
+    </a>
+    <a class="sitem" href="#" id="navTrash">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 12h10l1-12"/><path d="M10 11v5M14 11v5"/></svg>
+      回收站<span class="cnt" id="cntTrash">0</span>
+    </a>
+  </div>
+
+  <!-- 可折叠时间轴 -->
+  <div class="tgroup" id="tgroup">
+    <button class="tbtn-t" id="tbtn" aria-expanded="false" aria-controls="tpanel">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:1.8;fill:none;opacity:.8">
+        <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>
+      </svg>
+      时间
+      <span class="now" id="tNow">全部</span>
+      <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="tpanel" id="tpanel">
+      <div class="tline" id="tline"></div>
+    </div>
+  </div>
+
+  <div class="sgroup">
+    <div class="slabel">常用英雄</div>
+    <div class="heroes" id="heroList"></div>
+  </div>
+
+  <div class="foot">
+    <div class="storage">
+      <div class="lbl"><span>磁盘占用</span><b id="diskUsed">—</b></div>
+      <div class="meter"><i id="diskBar"></i></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ 主区 ============ -->
+<div class="stage">
+
+  <header class="head">
+    <div class="row">
+      <div>
+        <h1>全部录像 <small id="headStat">载入中…</small></h1>
+        <div class="sub" id="headSub"></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btnSelect">
+          <svg viewBox="0 0 24 24"><path d="m4 12 4 4 8-8"/><path d="M17 5h3v3M17 19h3v-3"/></svg>
+          多选
+        </button>
+        <button class="btn" id="btnRoot" title="切换数据目录">
+          <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
+          数据目录
+        </button>
+        <button class="btn" id="btnBroken" title="检查缺失或损坏的视频文件">
+          <svg viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg>
+          检查文件
+        </button>
+        <button class="btn primary" id="btnRebuild">
+          <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+          重新扫描
+        </button>
+      </div>
+    </div>
+
+    <div class="fbar">
+      <button class="pill" id="pillAgent">全部英雄 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="pill" id="pillMap">地图 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="pill" id="pillType">类型 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="pill" id="pillTag">标签 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="pill" id="pillMode">模式 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="pill" id="pillResult">胜负 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="pill" id="pillDay">
+        <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;opacity:1">
+          <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>
+        </svg>
+        日期 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <input class="search-inline" id="search" type="search" placeholder="搜索英雄 / 地图 / 名称…">
+      <div class="sp"></div>
+      <span class="stat" id="statCount">—</span>
+      <div class="seg" id="modeSwitch">
+        <button class="on" data-mode="detail" title="详细：大封面">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="7" height="14" rx="1.5"/><path d="M13 6h8M13 11h8M13 16h5"/></svg>
+          详细
+        </button>
+        <button data-mode="simple" title="简略：一行一场">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          简略
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 批量操作栏 -->
+  <div class="batchbar" id="batchbar" hidden>
+    <span class="bcount"><b id="selCount">0</b> 个已选</span>
+    <div class="bgroup">
+      <button class="tbtn" id="bAll">全选</button>
+      <button class="tbtn" id="bNone">取消</button>
+    </div>
+    <div class="bgroup">
+      <button class="tbtn" id="bTag">加标签</button>
+      <button class="tbtn" id="bFav">收藏</button>
+      <button class="tbtn" id="bExport">导出</button>
+    </div>
+    <div class="bgroup">
+      <button class="tbtn danger" id="bDelete">删除</button>
+      <button class="tbtn" id="bHide">隐藏</button>
+    </div>
+    <span class="bspacer"></span>
+    <div class="bgroup">
+      <button class="tbtn ghost" id="bExit">退出多选 ✕</button>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+    <div class="empty-state" id="emptyState" style="display:none">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3V9Z"/></svg>
+      <p>没有符合条件的视频</p>
+    </div>
+  </div>
+
+<!-- ============ 播放器 ============ -->
+<div class="player-page" id="player" hidden>
+    <div class="pp-head">
+      <div class="pp-heroava" id="phAva"></div>
+      <div class="info">
+        <div class="pp-title" id="phTitle"></div>
+        <div class="pp-meta" id="phMeta"></div>
+        <div class="pp-tags" id="phTags"></div>
+      </div>
+      <div class="pp-actions">
+        <button class="tbtn" id="btnBackList" title="返回列表 (Esc)">← 列表</button>
+        <button class="ib" id="btnFav" title="收藏 (F)">
+          <svg viewBox="0 0 24 24"><path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.8l6.5-.9L12 3Z"/></svg>
+        </button>
+        <button class="ib" id="btnTagOne" title="加标签 (T)">
+          <svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 0 1 2-2h4l6.5 6.5a2 2 0 0 1 0 2.8l-3 3a2 2 0 0 1-2.8 0L4 12V8Z"/><circle cx="8" cy="10" r="1.1" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <button class="ib" id="btnRename" title="重命名">
+          <svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13.5 5.5 4 4"/></svg>
+        </button>
+        <span class="divider"></span>
+        <button class="ib" id="btnExport" title="导出副本">
+          <svg viewBox="0 0 24 24"><path d="M12 4v11M8 12l4 4 4-4M5 20h14"/></svg>
+        </button>
+        <button class="ib" id="btnDeleteOne" title="删除 (Delete)">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 12h10l1-12"/><path d="M10 11v5M14 11v5"/></svg>
+        </button>
+        <button class="ib" id="btnHide" title="隐藏">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m6 18 12-12"/></svg>
+        </button>
+        <span class="divider"></span>
+        <button class="ib" id="btnClose" title="关闭 (Esc)">
+          <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="sibling-bar" id="siblingBar"></div>
+
+    <div class="meta-strip" id="phStrip"></div>
+
+    <div class="pp-body">
+      <button class="nav" id="btnPrev" title="上一个 (←)">
+        <svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+      </button>
+      <div class="screen">
+        <video id="video" controls playsinline preload="metadata"></video>
+        <div class="vloading" id="vloading">加载中…</div>
+      </div>
+      <button class="nav" id="btnNext" title="下一个 (→)">
+        <svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="pp-foot">
+      <div class="hint-row">
+        <kbd>←</kbd><kbd>→</kbd><span>切换</span>
+        <span class="vsep"></span>
+        <kbd>空格</kbd><span>播放</span>
+        <span class="vsep"></span>
+        <kbd>F</kbd><span>收藏</span>
+        <span class="vsep"></span>
+        <kbd>T</kbd><span>标签</span>
+        <span class="vsep"></span>
+        <kbd>Delete</kbd><span>删除</span>
+        <span class="vsep"></span>
+        <kbd>Esc</kbd><span>返回</span>
+      </div>
+      <span id="phPos"></span>
+    </div>
+</div>
+
+</div>
+
+<!-- ============ 下拉面板 ============ -->
+<div class="dropdown" id="dropdown" hidden></div>
+
+<!-- 日期选择：日历平铺 -->
+<div class="calpop" id="calpop" hidden>
+  <div class="calhead">
+    <button class="calnav" id="calPrev" title="上个月">
+      <svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+    </button>
+    <div class="caltitle" id="calTitle"></div>
+    <button class="calnav" id="calNext" title="下个月">
+      <svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+  </div>
+  <div class="calweek">
+    <span>一</span><span>二</span><span>三</span><span>四</span>
+    <span>五</span><span>六</span><span>日</span>
+  </div>
+  <div class="calgrid" id="calGrid"></div>
+  <div class="calfoot">
+    <span class="calhint">有录像的日期带圆点</span>
+    <button class="tbtn" id="calClear">全部日期</button>
+  </div>
+</div>
+
+<!-- ============ 标签弹窗 ============ -->
+<div class="mask" id="tagPick" hidden>
+  <div class="dialog">
+    <h3>选择标签</h3>
+    <div class="taglist" id="tagPickList"></div>
+    <div class="newtag">
+      <input id="newTagName" placeholder="新标签名称" maxlength="12">
+      <span class="color" id="newTagColor" title="换颜色"></span>
+      <button class="tbtn" id="newTagBtn">创建</button>
+    </div>
+    <div class="acts">
+      <button class="tbtn" id="tagPickCancel">取消</button>
+      <button class="tbtn" id="tagPickOk" style="background:var(--primary);border-color:var(--primary);color:#fff">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 标签管理 ============ -->
+<div class="mask" id="tagManage" hidden>
+  <div class="dialog">
+    <h3>标签管理</h3>
+    <div class="taglist" id="tagManageList"></div>
+    <div class="newtag">
+      <input id="mTagName" placeholder="新标签名称" maxlength="12">
+      <span class="color" id="mTagColor" title="换颜色"></span>
+      <button class="tbtn" id="mTagBtn">创建</button>
+    </div>
+    <div class="acts">
+      <button class="tbtn" id="tagManageClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 损坏文件 ============ -->
+<div class="mask" id="brokenBox" hidden>
+  <div class="dialog" style="width:min(720px,94vw)">
+    <h3>检查结果 <span id="brokenInfo" style="font-size:var(--fs-xs);color:var(--text-3);font-weight:400"></span></h3>
+    <p style="font-size:var(--fs-xs);color:var(--text-3);margin:-8px 0 12px;line-height:1.6">
+      下面这些记录对应的视频文件已经不在磁盘上，或者文件异常（打不开 / 大小异常）。<br>
+      建议选择「隐藏」，不会动任何文件；若确认无用可选「移到回收站」。
+    </p>
+    <div class="broken-list" id="brokenList"></div>
+    <div class="acts">
+      <button class="tbtn danger" id="brokenMove">移到回收站</button>
+      <button class="tbtn" id="brokenHide" style="background:var(--primary);border-color:var(--primary);color:#fff">全部隐藏</button>
+      <button class="tbtn" id="brokenClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 回收站 ============ -->
+<div class="mask" id="trashBox" hidden>
+  <div class="dialog" style="width:min(760px,94vw)">
+    <h3>回收站 <span id="trashInfo" style="font-size:var(--fs-xs);color:var(--text-3);font-weight:400"></span></h3>
+    <p style="font-size:var(--fs-xs);color:var(--text-3);margin:-8px 0 12px;line-height:1.6">
+      删除的视频会先放到这里，原始文件已从原位置移出。<br>
+      点条目可预览，确认后在右侧点「还原」或「彻底删除」。
+    </p>
+    <div class="trlist" id="trashList" style="max-height:52vh;overflow-y:auto"></div>
+    <div class="acts">
+      <button class="tbtn danger" id="trashPurgeAll">清空回收站</button>
+      <button class="tbtn" id="trashClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 回收站预览 -->
+<div class="player" id="trashPlayer" hidden>
+  <div class="player-bg"></div>
+  <div class="player-wrap">
+    <div class="pp-head">
+      <div class="info">
+        <div class="pp-title" id="tpTitle"></div>
+        <div class="pp-meta" id="tpMeta"></div>
+      </div>
+      <div class="pp-actions">
+        <button class="tbtn" id="tpRestore">↩ 还原</button>
+        <button class="tbtn danger" id="tpPurge">彻底删除</button>
+        <button class="ib" id="tpClose" style="margin-left:6px">
+          <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="pp-body">
+      <button class="nav" id="tpPrev"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="screen">
+        <video id="tpVideo" controls playsinline preload="metadata"></video>
+        <div class="vloading" id="tpLoading">加载中…</div>
+      </div>
+      <button class="nav" id="tpNext"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+    <div class="pp-foot"><span id="tpHint"></span><span id="tpPos"></span></div>
+  </div>
+</div>
+
+<!-- ============ 目录选择 ============ -->
+<div class="mask" id="modalRoot" hidden>
+  <div class="dialog" style="width:min(680px,94vw)">
+    <h3>选择数据目录</h3>
+    <p style="font-size:var(--fs-xs);color:var(--text-3);margin:-8px 0 12px;line-height:1.6">
+      选 ACLOS 的录制根目录（含 wonderfulVideos* 文件夹）。程序会自动找到加密索引库。
+    </p>
+    <div id="browsePath" style="background:var(--bg);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:8px 11px;font-size:var(--fs-xs);margin-bottom:8px"></div>
+    <div id="browseList" style="height:260px;overflow:auto;border:1px solid var(--line-2);border-radius:var(--r-sm);background:var(--bg)"></div>
+    <div class="acts">
+      <button class="tbtn" id="btnCancelRoot">取消</button>
+      <button class="tbtn" id="btnUseRoot" style="background:var(--primary);border-color:var(--primary);color:#fff">使用当前目录</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="/static/app.js?v=31"></script>
+</body>
+</html>
